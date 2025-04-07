@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Expenses Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Room Expenses Tracker</h1>
+    
+    <div class="container">
+        <h2>Add Roommate</h2>
+        <input type="text" id="roommateName" placeholder="Enter roommate name">
+        <button onclick="addRoommate()">Add Roommate</button>
+        <ul id="roommateList"></ul>
+    </div>
+
+    <div class="container">
+        <h2>Add Expense</h2>
+        <input type="text" id="expenseName" placeholder="Enter expense name">
+        <input type="number" id="expenseAmount" placeholder="Enter amount">
+        <button onclick="addExpense()">Add Expense</button>
+        <ul id="expenseList"></ul>
+    </div>
+    
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDybRyESfnDvtbrX1jqkRhXtzXLy7z-_po",
+            authDomain: "roomexpensestracker.firebaseapp.com",
+            databaseURL: "https://roomexpensestracker-default-rtdb.firebaseio.com",
+            projectId: "roomexpensestracker",
+            storageBucket: "roomexpensestracker.appspot.com",
+            messagingSenderId: "893846473165",
+            appId: "1:893846473165:web:492a47286ca8b01acb5c84"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        function addRoommate() {
+            const name = document.getElementById("roommateName").value;
+            if (name) {
+                const roommatesRef = ref(db, "roommates");
+                push(roommatesRef, { name });
+                document.getElementById("roommateName").value = "";
+            }
+        }
+
+        function addExpense() {
+            const expenseName = document.getElementById("expenseName").value;
+            const expenseAmount = document.getElementById("expenseAmount").value;
+            if (expenseName && expenseAmount) {
+                const expensesRef = ref(db, "expenses");
+                push(expensesRef, { name: expenseName, amount: expenseAmount });
+                document.getElementById("expenseName").value = "";
+                document.getElementById("expenseAmount").value = "";
+            }
+        }
+
+        function loadRoommates() {
+            const roommatesRef = ref(db, "roommates");
+            onValue(roommatesRef, (snapshot) => {
+                const list = document.getElementById("roommateList");
+                list.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const li = document.createElement("li");
+                    li.textContent = childSnapshot.val().name;
+                    list.appendChild(li);
+                });
+            });
+        }
+
+        function loadExpenses() {
+            const expensesRef = ref(db, "expenses");
+            onValue(expensesRef, (snapshot) => {
+                const list = document.getElementById("expenseList");
+                list.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const li = document.createElement("li");
+                    li.textContent = `${childSnapshot.val().name}: ₹${childSnapshot.val().amount}`;
+                    list.appendChild(li);
+                });
+            });
+        }
+
+        loadRoommates();
+        loadExpenses();
+    </script>
+</body>
+</html>
